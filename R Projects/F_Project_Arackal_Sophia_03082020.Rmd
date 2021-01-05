@@ -1,0 +1,584 @@
+---
+title: "Final Project"
+author: "Sophia Arackal"
+date: "3/8/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+**##1.Load the dataset day.csv  into memory.##**
+
+```{r}
+#Load the dataset day.csv Preview the document into memory.
+library(readr)
+day <- read_csv("../FINAL/day.csv")
+View(day)
+```
+
+
+**##2.	Perform the following data preparations using control structures:##**
+  **##2a. Convert numerical season (1,2,3, 4) to characters (springer, summer, fall and winter)##**
+  **##2b. Convert numerical weathersit (1,2,3,4) to characters (Good, Mist, Bad, Severe)##**
+
+
+```{r}
+#see structure before I change the variable types
+str(day)
+```
+
+
+
+
+```{r}
+#2a. Convert numerical season (1,2,3, 4) to characters (springer, summer, fall and winter)
+
+day$season[day$season == 1] <- "springer"
+day$season[day$season == 2] <- "summer"
+day$season[day$season == 3] <- "fall"
+day$season[day$season == 4] <- "winter"
+```
+
+
+
+
+```{r}
+#2b. Convert numerical weathersit (1,2,3,4) to characters (Good, Mist, Bad, Severe)
+
+day$weathersit[day$weathersit == 1] <- "Good"
+day$weathersit[day$weathersit == 2] <- "Mist"
+day$weathersit[day$weathersit == 3] <- "Bad"
+day$weathersit[day$weathersit == 4] <- "Severe"
+
+#to verify that the variables changed to characters
+str(day)
+```
+
+
+
+**##3.	Consider the following predictors, season, holiday, workingday, weathersit, atemp, hum, windspeed, casual and List all categorical variables from this list and convert them to factors.##**
+
+
+
+```{r}
+#to see if variable is a factor/categorical
+is.factor(day$season)
+is.factor(day$holiday)
+is.factor(day$workingday)
+is.factor(day$weathersit)
+is.factor(day$atemp)
+is.factor(day$hum)
+is.factor(day$windspeed)
+is.factor(day$casual)
+
+#see structure before I change the variable types
+str(day)
+
+
+#to identify the variable class
+class(day$season)
+class(day$holiday)
+class(day$workingday)
+class(day$weathersit)
+class(day$atemp)
+class(day$hum)
+class(day$windspeed)
+class(day$casual)
+```
+
+
+```{r}
+#I did not changed the variables below to categorical because they are continuous/numerical variables as shown by the class() script above so it was not necessary to change the variables.
+
+#day$atemp 
+#day$hum 
+#day$windspeed 
+#day$casual 
+
+
+
+#I only needed to convert these variables to a factor 
+day$season <- as.factor(day$season) 
+day$holiday <- as.factor(day$holiday) 
+day$workingday <- as.factor(day$workingday) 
+day$weathersit <- as.factor(day$weathersit) 
+
+
+
+
+#I printed to verify that the 4 variables have changed to factors and should be marked as "TRUE." The 4 variables that I did not changed to factors should  remained numeric and should be marked as "FALSE". The classes represented should be "factor" and "numeric." 
+
+
+print(is.factor(day$season)) 
+print(is.factor(day$holiday)) 
+print(is.factor(day$workingday)) 
+print(is.factor(day$weathersit)) 
+print(is.factor(day$atemp)) 
+print(is.factor(day$hum)) 
+print(is.factor(day$windspeed)) 
+print(is.factor(day$casual)) 
+
+
+# print the classes of the variables 
+
+
+print(class(day$season))
+print(class(day$holiday))
+print(class(day$workingday))
+print(class(day$weathersit))
+print(class(day$atemp))
+print(class(day$hum))
+print(class(day$windspeed))
+print(class(day$casual))
+```
+
+
+
+
+**##4.	Calculate the minimum, maximum, mean, median, standard deviation and three quartiles (25th, 50th and 75th percentiles) of cnt.##**
+
+
+```{r}
+
+#I need to verify that cnt is numeric before I can proceed and should be "TRUE."
+is.numeric(day$cnt)
+
+
+min(day$cnt)
+max(day$cnt)
+mean(day$cnt)
+median(day$cnt)
+sd(day$cnt)
+quantile(day$cnt, probs = c(0.25, 0.50, 0.75))
+```
+
+
+
+**##5.	Calculate the minimum, maximum, mean, median, standard deviation and three quartiles (25th, 50th and 75th percentiles) of registered.##**
+
+
+```{r}
+#I need to verify that registered is numeric before I can proceed and should be "TRUE."
+
+is.numeric(day$registered)
+
+
+min(day$registered)
+max(day$registered)
+mean(day$registered)
+median(day$registered)
+sd(day$registered)
+quantile(day$registered, probs = c(0.25, 0.50, 0.75))
+```
+
+
+
+
+**##6.	Calculate the correlation coefficient of the two variables: registered and cnt. Do they have a strong relationship?##**
+
+
+```{r}
+cor(day$registered, day$cnt)
+```
+
+**##6. Do they have a strong relationship?##**
+
+• Yes, Registered and cnt variables have a strong relationship since it is positive and close to 1.0.
+
+
+
+**##7.	Calculate the frequency table of season? What's the mode of season variable?##**
+
+
+```{r}
+#I need to convert that the variable season to a factor, then verify that it has changed to factor, before I can proceed. The class represented should be "factor" and  the levels should be 4 levels:springer, summer, fall and winter.  
+
+
+day$season <- as.factor(day$season) 
+print(is.factor(day$season)) 
+print(class(day$season))
+levels(day$season)
+
+#to get frequency table of season which should include all 4 levels: springer, summer, fall and winter:
+
+table(day$season)
+
+
+#to get mode of season variable and return the first variable with the largest count. The variable with the largest count is "fall".
+
+
+names(sort(table(day$season), decreasing = TRUE))[1]
+```
+
+
+
+**##8.	Calculate the cross table of season and weathersit, then produce proportions by rows and columns respectively.##**
+
+
+```{r}
+#I need to verify that the variables season and weathersit are factors before I can proceed. The class represented should be "factor" and  the levels for season, which should 4 levels:springer, summer, fall and winter, and the levels for weathersit, which should be 3 levels (Good, Mist, Bad) since there is not a fourth level(severe) in the dataframe. 
+
+is.factor(day$season)
+is.factor(day$weathersit)
+print(class(day$season)) 
+print(class(day$weathersit)) 
+levels(day$season)
+levels(day$weathersit)
+
+#Calculate the cross table of season and weathersit.
+
+xtabs(~ season + weathersit, data = day)
+
+#produce proportions by row 
+
+xtab.season.weathersit <- xtabs(~season + weathersit, data = day) 
+prop.table(xtab.season.weathersit, margin = 1) 
+
+#produce proportions by column
+
+xtab.season.weathersit <- xtabs(~season + weathersit, data = day) 
+prop.table(xtab.season.weathersit, margin = 2) 
+```
+
+
+
+**##9.	Please plot the histogram and density of the cnt and add the vertical line denoting the mean using ggplot2.##**
+
+
+```{r}
+#I need to load the ggplot2 package into memory first
+
+library(ggplot2)
+
+# Histogram with density plot and vertical mean line
+
+ggplot(data = day, aes(x=cnt))+ 
+  geom_histogram(aes(y=..density..), colour="green", fill="white")+
+  geom_density(alpha=.2, fill="blue") + geom_vline(aes(xintercept=mean(cnt)),
+                                                   color="purple", linetype="dashed", size=1)
+```
+
+
+**##10.	Please scatter plot of cnt (y-axis) against registered (x-axis) and add the trend line using ggplot2.##**
+
+
+```{r}
+## This is the Scatter plot with the trend line. 
+
+ggplot(data = day, aes(x = registered, y=cnt))+geom_point()+geom_smooth() ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+```
+
+
+**##11.	Please plot the barplot of season and weathersit on the same barplot using ggplot2.##**
+
+
+```{r}
+## setting bar plot to dodge
+
+ggplot(data = day, aes(x=season, y= ..count..)) + geom_bar(aes(fill = weathersit), position = "dodge")
+```
+
+
+
+**##12.	Please boxplot cnt (y-axis) against weathersit (x-axis) and save the graph in a file, cntweather.jpg, using ggplot2. Are there any differences in cnt with respect to weathersit?##**
+
+
+
+```{r}
+# Plot box plot cnt (y-axis) against weathersit (x-axis) using ggplot2.
+ggplot(data=day, aes(x=weathersit, y=cnt)) + 
+  geom_boxplot(aes(col= weathersit ), notch=TRUE)
+
+# save the file by specifying the file size
+
+ggsave("C:\\Users\\Busaba\\Documents\\Maryville University\\DSCI Intro to R Programming class\\Final Course Project\\FINAL\\cntweather.jpg", width = 20, height = 15, units = "cm")
+```
+**##12.) Are there any differences in cnt with respect to weathersit?##**
+
+•	I used the script to create the boxplot of cnt (y-axis) against weathersit (x-axis) using ggplot graphics and saved the graph in a file called **cntweather.jpg**. I attached this file in assignment in Canvas with same filename. 
+• Yes, there are differences in cnt with respect to weathersit. The "Bad" weathersit box does not overlap with the other boxes, which shows that there is strong evidence (95% confidence) that the medians differ from each other. "Good" weathersit group has the largest median of the cnt and "Bad" weathersit group has the smallest. The two notches of these two groups : "Good" weathersit group and "Bad" weathersit group do not overlap, therefore there is a strong evidence that the two medians are different. 
+
+
+
+**##13.	Build the following multiple linear regression models:##**
+
+**##13a.	Perform multiple linear regression with cnt as the response and the predictors are: season, weathersit, atemp, and registered.## **
+**##Write down the math formula with numerical coefficients for predictors  atemp and registered and skip the coefficients for season and  weathersit.##**
+
+
+```{r, echo = FALSE}
+#check the data type first; if it is not a factor yet, I need to convert it into a factor.
+
+str(day)
+if(!is.factor(day$season))
+if(!is.factor(day$weathersit))
+    
+
+#convert it to a factor
+day$season <- as.factor(day$season)
+day$weathersit <- as.factor(day$weathersit)
+
+
+#double check the data type. If it is a factor, it should be "TRUE" for season and weathersit. If not a factor, it should be "FALSE" for atemp and registered. Verify the structure of the dataframe.
+
+is.factor(day$season)
+is.factor(day$weathersit)
+is.factor(day$atemp)
+is.factor(day$registered)
+str(day)
+```
+
+
+
+**##13a.	Perform multiple linear regression with cnt as the response and the predictors are: season, weathersit, atemp, and registered.##** 
+**#Write down the math formula with numerical coefficients for predictors  atemp and registered and skip the coefficients for season and  weathersit. I will highlight the numerical coefficients.##**
+
+• I built the linear model to forecast cnt using season, weathersit, atemp, and registered using the following R formula:
+
+```{r, echo = FALSE}
+#remove scientific notation.
+options(scipen = 999, digits = 5)
+
+#linear regression formula
+lm.resultc <- lm(cnt ~ season + weathersit +atemp +registered, data= day)
+
+Intercept <- round(lm.resultc$coefficients["(Intercept)"],2)
+season_coef <- -round(lm.resultc$coefficients["season"],2)
+weathersit_coef <- round(lm.resultc$coefficients["weathersit"],2)
+atemp_coef <- round(lm.resultc$coefficients["atemp"],2)
+registered_coef <- round(lm.resultc$coefficients["registered"],2)
+
+
+summary(lm.resultc) 
+summary(lm.resultc)$r.squared
+summary(lm.resultc)$adj.r.squared
+```
+
+Summary
+
+The R squared and Adjusted R squared of this in sample fit are `r summary(lm.resultc)$r.squared`, `r summary(lm.resultc)$adj.r.squared` respectively.
+
+
+The relationship between cnt using season, weathersit, atemp, and registered are:
+
+$cnt=\beta_{0}+\beta_{1}(seasonspringer)+\beta_{2}seasonsummer)+\beta_{3}(seasonwinter)+\beta_{4}(weathersitGood)+\beta_{5}(weathersitMist)+\beta_{6}(atemp)+\beta_{7}(registered)$
+
+cnt = `r coef(lm.resultc)[1]` + `r coef(lm.resultc)[2]` * seasonspringer + `r coef(lm.resultc)[3]` * seasonsummer + `r coef(lm.resultc)[4]` * seasonwinter + `r coef(lm.resultc)[5]` * weathersitGood + `r coef(lm.resultc)[6]` * weathersitMist + `r coef(lm.resultc)[7]` * atemp + `r coef(lm.resultc)[8]` * registered
+
+
+
+
+
+**##13b.	Preform multiple linear regression with cnt as the response and the predictors are: season, workingday, weathersit, atemp, and registered. ##** 
+**##Write down the math formula with numerical coefficients for predictors  atemp and registered and skip the coefficients for season, workingday and weathersit. I will highlight the numerical coefficients. ##**
+
+• I built the linear model to forecast cnt using season, workingday, weathersit, atemp, and registered using the following R formula:
+```{r, echo = FALSE}
+#remove scientific notation.
+options(scipen = 999, digits = 5)
+
+if(!is.factor(day$workingday))
+
+#convert it to a factor
+day$workingday <- as.factor(day$workingday)
+
+
+#double check the data type
+is.factor(day$workingday)
+
+#linear regression formula
+lm.resultsw <- lm(cnt ~ season + workingday + weathersit + atemp + registered, data= day)
+
+Intercept <- round(lm.resultsw$coefficients["(Intercept)"],2)
+season_coef <- -round(lm.resultsw$coefficients["season"],2)
+workingday_coef <- -round(lm.resultsw$coefficients["workingday"],2)
+weathersit_coef <- round(lm.resultsw$coefficients["weathersit"],2)
+atemp_coef <- round(lm.resultsw$coefficients["atemp"],2)
+registered_coef <- round(lm.resultsw$coefficients["registered"],2)
+
+
+summary(lm.resultsw) 
+summary(lm.resultsw)$r.squared
+summary(lm.resultsw)$adj.r.squared
+```
+
+Summary
+
+The R squared and Adjusted R squared of this in sample fit are `r summary(lm.resultsw)$r.squared`, `r summary(lm.resultsw)$adj.r.squared` respectively.
+
+The relationship between cnt using season, workingday, weathersit, atemp, and registered are:
+
+$cnt=\beta_{0}+\beta_{1}(seasonspringer)+\beta_{2}seasonsummer)+\beta_{3}(seasonwinter)+\beta_{4}(workingday1)+\beta_{5}(weathersitGood)+\beta_{6}(weathersitMist)+\beta_{7}(atemp)+\beta_{8}(registered)$
+
+cnt = `r coef(lm.resultsw)[1]` + `r coef(lm.resultsw)[2]` * seasonspringer + `r coef(lm.resultsw)[3]` * seasonsummer + `r coef(lm.resultsw)[4]` * seasonwinter + `r coef(lm.resultsw)[5]` * workingday1 + `r coef(lm.resultsw)[6]` * weathersitGood + `r coef(lm.resultsw)[7]` * weathersitMist + `r coef(lm.resultsw)[8]` * atemp + `r coef(lm.resultsw)[9]` * registered
+
+
+
+
+**##13c.	Preform multiple linear regression with cnt as the response and the predictors are: season, holiday, workingday, weathersit, atemp, hum, windspeed, and registered.Write down the math formula with numerical coefficients. I will highlight the numerical coefficients.##** 
+
+
+```{r, echo = FALSE}
+
+if(!is.factor(day$holiday))
+
+#convert it to a factor
+day$holiday <- as.factor(day$holiday)
+
+
+#double check the data type
+is.factor(day$holiday)
+
+
+#linear regression formula
+lm.results8 <- lm(cnt ~ season + holiday + workingday + weathersit + atemp + hum + windspeed + registered, data= day)
+
+
+Intercept <- round(lm.results8$coefficients["(Intercept)"],2)
+season_coef <- -round(lm.results8$coefficients["season"],2)
+holiday_coef <- -round(lm.results8$coefficients["holiday"],2)
+workingday_coef <- -round(lm.results8$coefficients["workingday"],2)
+weathersit_coef <- round(lm.results8$coefficients["weathersit"],2)
+atemp_coef <- round(lm.results8$coefficients["atemp"],2)
+hum_coef <- round(lm.results8$coefficients["hum"],2)
+windspeed_coef <- round(lm.results8$coefficients["windspeed"],2)
+registered_coef <- round(lm.results8$coefficients["registered"],2)
+
+
+
+summary(lm.results8) 
+summary(lm.results8)$r.squared
+summary(lm.results8)$adj.r.squared
+```
+
+Summary
+
+
+The R squared and Adjusted R squared of this in sample fit are `r summary(lm.results8)$r.squared`, `r summary(lm.results8)$adj.r.squared` respectively.
+
+
+The relationship between cnt using season, holiday, workingday, weathersit, atemp, hum, windspeed, and registered are:
+
+$cnt=\beta_{0}+\beta_{1}(seasonspringer)+\beta_{2}seasonsummer)+\beta_{3}(seasonwinter)+\beta_{4}(holiday1)+\beta_{5}(workingday1)+\beta_{6}(weathersitGood)+\beta_{7}(weathersitMist)+\beta_{8}(atemp)+\beta_{9}(hum)+\beta_{10}(windspeed)+\beta_{11}(registered)$
+
+
+cnt = `r coef(lm.results8)[1]` + `r coef(lm.results8)[2]` * seasonspringer + `r coef(lm.results8)[3]` * seasonsummer + `r coef(lm.results8)[4]` * seasonwinter + `r coef(lm.results8)[5]` * holiday1 +`r coef(lm.results8)[6]` * workingday1 + `r coef(lm.results8)[7]` * weathersitGood + `r coef(lm.results8)[8]` * weathersitMist + `r coef(lm.results8)[9]` * atemp + `r coef(lm.results8)[10]` * hum + `r coef(lm.results8)[11]` * windspeed + `r coef(lm.results8)[12]` * registered
+
+
+
+
+**##13d.	Which model do you recommend to the management based on adjusted R squared? Justify your answer.##** 
+
+• This is all the R squared and Adjusted R squared values summarized for Question 13A-13C.
+
+•The R squared and Adjusted R squared values for Question 13A are `r summary(lm.resultc)$r.squared`, `r summary(lm.resultc)$adj.r.squared` respectively.
+•The R squared and Adjusted R squared values for Question 13B are `r summary(lm.resultsw)$r.squared`, `r summary(lm.resultsw)$adj.r.squared` respectively.
+•The R squared and Adjusted R squared values for Question 13C are `r summary(lm.results8)$r.squared`, `r summary(lm.results8)$adj.r.squared` respectively.
+
+
+• **My Recommendation:** Based on evaluating all the models' R-Squared and the adjusted R-Squared values in Question 13 (highlighted), I would recommend to the management the model that forecasted between cnt using season, holiday, workingday, weathersit, atemp, hum, windspeed, and registered in Question 13C. The additional predictors in question 13C improved the model's performance since the R-Squared and the adjusted R-Squared values had increased due to fitting the model better and having an interaction between those variables. 
+
+
+
+**##14.	Build the following logistic models:##**
+**##14a.	forecast holiday using cnt, season, and registered. I will highlight the McFadden/pseudo R squared value.##**
+
+
+```{r, echo = FALSE}
+#display the structure of day
+str(day)
+
+
+# I need to convert holiday which has finite cases to factor
+day$holiday <- as.factor(day$holiday)
+
+
+#after changing to factors to confirm that holiday has been changed to factor and to see the levels
+str(day)
+levels(day$holiday)
+
+#load the pscl package
+library(pscl)
+
+glm.result1 <- glm(holiday ~ cnt + season + registered,family=binomial,data=day ) 
+summary(glm.result1)
+
+#get the McFadden/pseudo R squared
+pR2(glm.result1)
+
+#to show only the McFadden/pseudo R squared value
+pR2(glm.result1, McFadden)[["McFadden"]]
+```
+
+
+Summary
+
+The McFadden/pseudo R squared value is  `r pR2(glm.result1)[4]`.
+
+
+
+**##14b.	forecast the holiday using cnt, season, weathersit , and registered. I will highlight the McFadden/pseudo R squared value.##**
+
+
+```{r, echo = FALSE}
+
+glm.result2 <- glm(holiday ~ cnt + season + weathersit + registered,family=binomial,data=day ) 
+summary(glm.result2)
+
+#get the McFadden/pseudo R squared
+pR2(glm.result2)
+
+#to show only the McFadden/pseudo R squared value
+pR2(glm.result2, McFadden)[["McFadden"]]
+```
+
+
+
+Summary
+
+The McFadden/pseudo R squared value is  `r pR2(glm.result2)[4]`.
+
+
+**##14c.	forecast the holiday using cnt, season, weathersit , workingday, and registered. I will highlight the McFadden/pseudo R squared value.##**
+
+
+```{r, echo = FALSE}
+glm.result3 <- glm(holiday ~ cnt + season + weathersit + workingday + registered,family=binomial,data=day ) 
+summary(glm.result3)
+
+#get the McFadden/pseudo R squared
+pR2(glm.result3)
+
+#to show only the McFadden/pseudo R squared value
+pR2(glm.result3, McFadden)[["McFadden"]]
+```
+
+Summary
+
+The McFadden/pseudo R squared value is  `r pR2(glm.result3)[4]`.
+
+
+
+**##14d.	Which model do you recommend to the management based on McFadden/pseudo R squared to? Justify your answer.##** 
+
+• This is all the McFadden/pseudo R squared values summarized for Question 14A-14C.
+
+• The McFadden/pseudo R squared value for 14A is  `r pR2(glm.result1)[4]`.
+• The McFadden/pseudo R squared value for 14B is  `r pR2(glm.result2)[4]`.
+• The McFadden/pseudo R squared value for 14C is  `r pR2(glm.result3)[4]`.
+
+
+• **My Recommendation:** Based on evaluating all the models' the McFadden/pseudo R squared values in Question 14 (highlighted), I would recommend to the management the model that forecasted the he holiday using cnt, season, weathersit , workingday, and registered in Question 14C. The additional predictors in question 14C improved the model's performance since the McFadden/pseudo R squared values had increased due to fitting the model better and having an interaction between those variables. 
+
+
+
+
+**##15.	Summarize Question 13 and Question 14 using R markdown to generate reproducible reports.##**
+
+• Since I included all my answers in a R Markdown, I included the summaries of Question 13 and Question 14 in this document. 
+
+
+
