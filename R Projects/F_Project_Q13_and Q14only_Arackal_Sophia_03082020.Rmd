@@ -1,0 +1,270 @@
+---
+title: "Final_Project_Q13_and Q14only_Arackal_Sophia"
+author: "Sophia Arackal"
+date: "3/8/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Load the dataset day.csv Preview the document into memory.
+library(readr)
+day <- read_csv("../FINAL/day.csv")
+View(day)
+```
+
+
+**##13.	Build the following multiple linear regression models:##**
+
+**##13a.	Perform multiple linear regression with cnt as the response and the predictors are: season, weathersit, atemp, and registered.## **
+**##Write down the math formula with numerical coefficients.##**
+
+
+```{r, echo = FALSE}
+#check the data type first; if it is not a factor yet, convert it
+str(day)
+if(!is.factor(day$season))
+if(!is.factor(day$weathersit))
+    
+
+#convert it to a factor
+day$season <- as.factor(day$season)
+day$weathersit <- as.factor(day$weathersit)
+
+
+#double check the data type
+is.factor(day$season)
+is.factor(day$weathersit)
+is.factor(day$atemp)
+is.factor(day$registered)
+str(day)
+```
+
+
+
+**##13a.	Perform multiple linear regression with cnt as the response and the predictors are: season, weathersit, atemp, and registered.##** 
+**##Write down the math formula with numerical coefficients.##**
+
+• I built the linear model to forecast cnt using season, weathersit, atemp, and registered using the following R formula:
+```{r, echo = FALSE}
+#remove scientific notation.
+options(scipen = 999, digits = 5)
+
+#linear regression formula
+lm.resultc <- lm(cnt ~ season + weathersit +atemp +registered, data= day)
+
+Intercept <- round(lm.resultc$coefficients["(Intercept)"],2)
+season_coef <- -round(lm.resultc$coefficients["season"],2)
+weathersit_coef <- round(lm.resultc$coefficients["weathersit"],2)
+atemp_coef <- round(lm.resultc$coefficients["atemp"],2)
+registered_coef <- round(lm.resultc$coefficients["registered"],2)
+
+
+summary(lm.resultc) 
+summary(lm.resultc)$r.squared
+summary(lm.resultc)$adj.r.squared
+```
+
+The R squared and Adjusted R squared of this in sample fit are `r summary(lm.resultc)$r.squared`, `r summary(lm.resultc)$adj.r.squared` respectively.
+
+
+The relationship between cnt using season, weathersit, atemp, and registered are:
+
+$cnt=\beta_{0}+\beta_{1}(season)+\beta_{2}(weathersit)+\beta_{3}(atemp)+\beta_{4}(registered)$
+
+cnt = `r coef(lm.resultc)[1]` + `r coef(lm.resultc)[2]` * season + `r coef(lm.resultc)[3]` * weathersit + `r coef(lm.resultc)[4]` * atemp + `r coef(lm.resultc)[5]` * registered
+
+
+
+**##13b.	Preform multiple linear regression with cnt as the response and the predictors are: season, workingday, weathersit, atemp, and registered. ##** 
+**##Write down the math formula with numerical coefficients.##**
+
+• I built the linear model to forecast cnt using season, workingday, weathersit, atemp, and registered using the following R formula:
+```{r, echo = FALSE}
+#remove scientific notation.
+options(scipen = 999, digits = 5)
+
+if(!is.factor(day$workingday))
+
+#convert it to a factor
+day$workingday <- as.factor(day$workingday)
+
+
+#double check the data type
+is.factor(day$workingday)
+
+#linear regression formula
+lm.resultsw <- lm(cnt ~ season + workingday + weathersit + atemp + registered, data= day)
+
+Intercept <- round(lm.resultc$coefficients["(Intercept)"],2)
+season_coef <- -round(lm.resultc$coefficients["season"],2)
+workingday_coef <- -round(lm.resultc$coefficients["workingday"],2)
+weathersit_coef <- round(lm.resultc$coefficients["weathersit"],2)
+atemp_coef <- round(lm.resultc$coefficients["atemp"],2)
+registered_coef <- round(lm.resultc$coefficients["registered"],2)
+
+
+summary(lm.resultsw) 
+summary(lm.resultsw)$r.squared
+summary(lm.resultsw)$adj.r.squared
+```
+The R squared and Adjusted R squared of this in sample fit are `r summary(lm.resultsw)$r.squared`, `r summary(lm.resultsw)$adj.r.squared` respectively.
+
+
+**##13b.	Preform multiple linear regression with cnt as the response and the predictors are: season, workingday, weathersit, atemp, and registered. ##** 
+**##Write down the math formula with numerical coefficients.##**
+
+The relationship between cnt using season, workingday, weathersit, atemp, and registered are:
+
+$cnt=\beta_{0}+\beta_{1}(season)+\beta_{2}(workingday)+\beta_{3}(weathersit)+\beta_{4}(atemp)+\beta_{5}(registered)$
+
+cnt = `r coef(lm.resultsw)[1]` + `r coef(lm.resultsw)[2]` * season + `r coef(lm.resultsw)[3]` * workingday + `r coef(lm.resultsw)[4]` * weathersit + `r coef(lm.resultsw)[5]` * atemp + `r coef(lm.resultsw)[6]` * registered
+
+
+
+**##13c.	Preform multiple linear regression with cnt as the response and the predictors are: season, holiday, workingday, weathersit, atemp, hum, windspeed, and registered.##** 
+
+**##Write down the math formula with numerical coefficients.##**
+```{r, echo = FALSE}
+
+if(!is.factor(day$holiday))
+
+#convert it to a factor
+day$holiday <- as.factor(day$holiday)
+
+
+#double check the data type
+is.factor(day$holiday)
+
+
+#linear regression formula
+lm.results8 <- lm(cnt ~ season + holiday + workingday + weathersit + atemp + hum + windspeed + registered, data= day)
+
+
+Intercept <- round(lm.results8$coefficients["(Intercept)"],2)
+season_coef <- -round(lm.results8$coefficients["season"],2)
+holiday_coef <- -round(lm.results8$coefficients["holiday"],2)
+workingday_coef <- -round(lm.results8$coefficients["workingday"],2)
+weathersit_coef <- round(lm.results8$coefficients["weathersit"],2)
+atemp_coef <- round(lm.results8$coefficients["atemp"],2)
+hum_coef <- round(lm.results8$coefficients["hum"],2)
+windspeed_coef <- round(lm.results8$coefficients["windspeed"],2)
+registered_coef <- round(lm.results8$coefficients["registered"],2)
+
+
+
+
+
+summary(lm.results8) 
+summary(lm.results8)$r.squared
+summary(lm.results8)$adj.r.squared
+```
+
+The R squared and Adjusted R squared of this in sample fit are `r summary(lm.results8)$r.squared`, `r summary(lm.results8)$adj.r.squared` respectively.
+
+
+**###13c.	Preform multiple linear regression with cnt as the response and the predictors are: season, holiday, workingday, weathersit, atemp, hum, windspeed, and registered.##** 
+**##Write down the math formula with numerical coefficients.##**
+
+The relationship between cnt using season, holiday, workingday, weathersit, atemp, hum, windspeed, and registered are:
+
+$cnt=\beta_{0}+\beta_{1}(season)+\beta_{2}(holiday)+\beta_{3}(workingday)+\beta_{4}(weathersit)+\beta_{5}(atemp)+\beta_{6}(hum)+\beta_{7}(windspeed)+\beta_{8}(registered)$
+
+cnt = `r coef(lm.results8)[1]` + `r coef(lm.results8)[2]` * season + `r coef(lm.results8)[3]` * holiday + `r coef(lm.results8)[4]` * workingday + `r coef(lm.results8)[5]` * weathersit + `r coef(lm.results8)[6]` * atemp + `r coef(lm.results8)[7]` * hum + `r coef(lm.results8)[8]` * windspeed + `r coef(lm.results8)[9]` * registered
+
+
+
+**##13d.	Which model do you recommend to the management based on adjusted R squared? Justify your answer.##** 
+
+•The R squared and Adjusted R squared of this in sample fit are `r summary(lm.resultc)$r.squared`, `r summary(lm.resultc)$adj.r.squared` respectively.
+•The R squared and Adjusted R squared of this in sample fit are `r summary(lm.resultsw)$r.squared`, `r summary(lm.resultsw)$adj.r.squared` respectively.
+•The R squared and Adjusted R squared of this in sample fit are `r summary(lm.results8)$r.squared`, `r summary(lm.results8)$adj.r.squared` respectively.
+
+
+
+
+• **My Recommendation:** Based on evaluating all the models' R-Squared and the adjusted R-Squared values in Question 3 (highlighted in blue below), I would reccommend to the management the model that forecasted the price using the bedrooms, bathrooms, sqft_living, waterfront and grade in Question 3C. The coefficient of Waterfront is added to the price value, which has increased the price. The additional predictors in question 3C improved the model's performance since the R-Squared and the adjusted R-Squared values had increased due to fitting the model better and having an interaction between those variables. The R-Squared value of 0.6156873 and the adjusted R-Squared value of 0.6154204 are higher than the answers from question 3A and 3B. The output is below.
+
+
+
+
+```{r, echo = FALSE}
+#14.	Build the following logistic models:
+#14a.	forecast holiday using cnt, season, and registered.
+
+#display the structure of day
+str(day)
+
+
+# I need to convert holiday which has finite cases to factor
+day$holiday <- as.factor(day$holiday)
+
+
+#after changing to factors to confirm that holiday has been changed to factor and to see the levels
+str(day)
+levels(day$holiday)
+
+#load the pscl package
+library(pscl)
+
+glm.result1 <- glm(holiday ~ cnt + season + registered,family=binomial,data=day ) 
+summary(glm.result1)
+
+#get the McFadden/pseudo R squared
+pR2(glm.result1)
+pR2(glm.result1, McFadden)[["McFadden"]]
+```
+
+The McFadden/pseudo R squared value is  `r pR2(glm.result1)[4]`.
+
+
+
+
+```{r, echo = FALSE}
+#14b.	forecast the holiday using cnt, season, weathersit , and registered
+
+glm.result2 <- glm(holiday ~ cnt + season + weathersit + registered,family=binomial,data=day ) 
+summary(glm.result2)
+
+#get the McFadden/pseudo R squared
+pR2(glm.result2)
+pR2(glm.result2, McFadden)[["McFadden"]]
+```
+The McFadden/pseudo R squared value is  `r pR2(glm.result2)[4]`.
+
+
+
+```{r, echo = FALSE}
+#14c.	forecast the holiday using cnt, season, weathersit , workingday, and registered
+glm.result3 <- glm(holiday ~ cnt + season + weathersit + workingday + registered,family=binomial,data=day ) 
+summary(glm.result3)
+
+#get the McFadden/pseudo R squared
+pR2(glm.result3)
+pR2(glm.result3, McFadden)[["McFadden"]]
+```
+The McFadden/pseudo R squared value is  `r pR2(glm.result3)[4]`.
+
+
+
+**##14d.	Which model do you recommend to the management based on McFadden/pseudo R squared to? Justify your answer.##** 
+
+• The McFadden/pseudo R squared value for 14A is  `r pR2(glm.result1)[4]`.
+• The McFadden/pseudo R squared value for 14B is  `r pR2(glm.result2)[4]`.
+• The McFadden/pseudo R squared value for 14C is  `r pR2(glm.result3)[4]`.
+
+
+• **My Recommendation:** Based on evaluating all the models' R-Squared and the adjusted R-Squared values in Question 3 (highlighted in blue below), I would reccommend to the management the model that forecasted the price using the bedrooms, bathrooms, sqft_living, waterfront and grade in Question 3C. The coefficient of Waterfront is added to the price value, which has increased the price. The additional predictors in question 3C improved the model's performance since the R-Squared and the adjusted R-Squared values had increased due to fitting the model better and having an interaction between those variables. The R-Squared value of 0.6156873 and the adjusted R-Squared value of 0.6154204 are higher than the answers from question 3A and 3B. The output is below.
+
+
+
+
+```{r}
+#15.	Summarize Question 13 and Question 14 using R markdown to generate reproducible reports.
+
+```
+
+
