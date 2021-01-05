@@ -1,0 +1,727 @@
+---
+title: "Final Project"
+author: "Sophia Arackal"
+date: "8/23/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#############################################
+#                                           #
+# Author:    Sophia Arackal                 #
+# Date:       08/23/2020                    #
+# File Name:FinalProject_Arackal_Sophia.Rmd #
+#                                           #
+#############################################
+
+```{r}
+#clear memory
+rm(list = ls())
+```
+
+```{r}
+#install packages into R memory
+install.packages("caret")
+install.packages("e1071")
+install.packages("tree")
+install.packages("randomForest")
+install.packages("factoextra")
+install.packages("cluster")
+install.packages("neuralnet")
+install.packages("boot")
+install.packages("leaps")
+install.packages("bestglm")
+install.packages("MASS")
+
+
+#load the libraries into R memory
+library(caret)
+library(leaps)
+library (bestglm)
+library (boot)
+library(e1071)
+library (MASS)
+library(tree)
+library(randomForest)
+library(cluster)
+library(factoextra)
+library(neuralnet)
+library(arm)
+
+
+```
+
+
+########################
+# 1.  Data Preparation #
+########################
+
+
+```{r}
+#1a.	Load the dataset insurance.csv into memory.
+
+# Load  and prepare the data
+library(readr)
+insurance <- read_csv("../R_Predictive Modelling/Final Project/insurance.csv")
+
+# View data
+View(insurance)
+
+#view the columns names 
+names(insurance)
+
+#view head of insurance 
+head(insurance)
+
+#view dimensions of insurance
+dim(insurance)
+
+```
+
+
+```{r}
+#1b. In the data frame, transform the variable charges by setting insurance$charges = log(insurance$charges). Do not transform it outside of the data frame.
+
+# transform the variable charges using natural log
+insurance$charges = log(insurance$charges)
+
+# View data after transformation
+head(insurance)
+
+```
+
+
+```{r}
+#1c. Using the data set from 1.b, use the model.matrix() function to create another data set that uses dummy variables in place of categorical variables. 
+#Verify that the first column only has ones (1) as values, and then discard the column only after verifying it has only ones as values.
+
+#determine variable type
+class(insurance$age)
+class(insurance$sex)
+class(insurance$bmi)
+class(insurance$children)
+class(insurance$smoker)
+class(insurance$region)
+class(insurance$charges)
+
+#convert to factor
+insurance$sex = factor(insurance$sex)
+insurance$smoker = factor(insurance$smoker)
+insurance$region = factor(insurance$region)
+
+#determine character variable has changed to factor
+class(insurance$sex)
+class(insurance$smoker)
+class(insurance$region)
+
+#use model.matrix()and confirms that intercept column = 1
+momat<- model.matrix(~ sex + smoker + region, data = insurance)
+head(momat)
+
+#remove intercept column since all values in this column is 1
+momat = momat[,-1]
+head(momat)
+
+#Add new values from model.matrix to dataframe
+insurance1 <- cbind(insurance[, c('age','bmi','children', 'charges')], momat)
+
+# View data
+head(insurance1)
+
+
+```
+
+
+```{r}
+#1d.	Use the sample() function with set.seed equal to 1 to generate row indexes for your training and tests sets, 
+# with 2/3 of the row indexes for your training set and 1/3 for your test set. 
+# Do not use any method other than the sample() function for splitting your data.
+
+##split the data into train set and test set
+#fix the seed to 1
+set.seed(1)
+
+#split the data into train set and test set
+train_idx = sample(1:nrow(insurance), (nrow(insurance)*(2/3)))
+
+# Create training set: training
+summary(train_idx)
+
+# Create test set: test
+summary(-train_idx)
+
+
+```
+
+
+```{r}
+#1e.	Create a training and test data set from the data set created in 1.b 
+#using the training and test row indexes created in 1.d. 
+#Unless otherwise stated, only use the training and test data sets created in this step.
+
+# Create train and test from train index created in 1d.
+train <- insurance[train_idx, ]
+test <- insurance[-train_idx, ]
+
+```
+
+```{r}
+#1f. Create a training and test data set from data set created in 1.c 
+#using the training and test row indexes created in 1.d
+
+
+# Create training set from model matrix dataframe: train_1f
+train_1f <- insurance1[train_idx,]
+
+# See the dimensions train_1f
+print(dim(train_1f))
+
+# Create test set from model matrix dataframe: test_1f
+test_1f <- insurance1[-train_idx,]
+
+# See the dimensions test_1f
+print(dim(test_1f))
+
+```
+
+
+#################################################
+# 2.  Build a multiple linear regression model. #
+#################################################
+
+
+```{r}
+
+#2a.	Perform multiple linear regression with charges as the response and the predictors are age, sex, bmi, children, smoker, and region.
+#Print out the results using the summary() function. Use the training data set created in step 1.e to train your model.
+
+#build the multiple linear regression model
+
+model = lm(charges ~ age + sex + bmi + children + smoker + region, data=train)
+
+summary(model)
+
+```
+
+
+```{r}
+#2b.	Is there a relationship between the predictors and the response?
+
+```
+
+```{r}
+#2c.	Does sex have a statistically significant relationship to the response?
+
+```
+
+
+```{r}
+#2d.	Perform best subset selection using the stepAIC() function from the MASS library, choose best model based on AIC. 
+#For the "direction" parameter in the stepAIC() method, set direction="backward"
+
+#load the library
+library(MASS)
+
+#run the linear model with all potential predictors in r using lm () function
+full1 = lm(charges ~ age + sex + bmi + children + smoker + region, data=train)
+
+#next we run stepwise selection calling function stepAIC with two arguments, 1st is the full model result, the 2nd one is the direction. It could be backward or forward etc.
+lm.bwd = stepAIC(full1, direction = "backward")
+
+#to print out the best model based backward selection, type model result lm.bwd
+lm.bwd
+
+
+```
+
+
+```{r}
+#2e.	Compute the test error of the best model in #3d based on AIC using LOOCV using trainControl() and train() 
+#from the caret library. Report the MSE by squaring the reported RMSE.
+
+#**I used the original insurance.csv as data since it will provide a larger data set than Train.
+
+# To calculate the test error of the best model based on AIC using LOOCV
+
+library(caret) 
+
+# define training control by specifying LOOCV
+train_control = trainControl(method='LOOCV') 
+
+# train the model
+modelE <- train(charges ~ age + sex + bmi + children + smoker + region, data=insurance, trControl=train_control, method='lm')
+
+# summarize results
+print(modelE)
+
+```
+
+
+
+
+```{r}
+#2f.	Calculate the test error of the best model in #3d based on AIC using 10-fold Cross-Validation.
+#Use train and trainControl from the caret library. Refer to model selected in #3d based on AIC. Report the MSE.
+
+# To calculate the test error of the best model based on AIC using 10-fold CV
+train.control1 <- trainControl(method = "cv", number = 10)
+
+# Train the model
+kfoldCV.model <- train(charges ~ age + sex + bmi + children + smoker + region, 
+                       data = insurance, 
+                       method = "lm",
+                       trControl = train.control1)
+
+# Display results
+kfoldCV.model
+
+```
+
+
+
+```{r}
+#2g.	Calculate and report the test MSE using the best model from 2.d and test data set created in step 1.e.
+
+Lm2g= lm(charges ~ age + sex + bmi + children + smoker + region, data= test)
+
+#working on test set
+Lm2g_pre = predict(Lm2g, test)
+Lm2g.test = test$charges
+
+#compute the MSE
+MSE_linear <- mean((Lm2g_pre-Lm2g.test)^2)
+
+print(MSE_linear)
+
+```
+
+
+```{r}
+#2h.	Compare the test MSE calculated in step 2.f using 10-fold cross-validation with the test MSE calculated in step 2.g. How similar are they?
+
+# Display results of 2f
+kfoldCV.model
+
+#Display results of 2g
+MSE_linear <- mean((Lm2g_pre-Lm2g.test)^2)
+print(MSE_linear)
+
+```
+
+
+######################################
+# 3.  Build a regression tree model. #
+######################################
+
+```{r}
+#3a.	Build a regression tree model using function tree(), 
+#where charges is the response and 
+#the predictors are age, sex, bmi, children, smoker, and region.
+
+library(tree)
+tree.insurance = tree(charges ~ age + sex + bmi + children + smoker + region, insurance, subset = train_idx)
+summary(tree.insurance)
+
+#to see plot of tree model before CV and pruning
+plot(tree.insurance)
+text(tree.insurance, pretty = 0)
+title(main = "Unpruned Classification Tree Model")
+
+
+```
+
+
+```{r}
+#3b.	Find the optimal tree by using cross-validation and display the results in a graphic. Report the best size.
+
+#to find the optimal tree model using CV 
+cv.insurance = cv.tree(tree.insurance)
+cv.insurance
+
+#to determine the optimal tree number
+plot(cv.insurance$size, cv.insurance$dev, type = 'b' )
+title(main = "Cross-Validation Tree Model")
+
+
+```
+
+
+```{r}
+#3c.	Justify  the number you picked for the optimal tree with regard to the principle of variance-bias trade-off.
+
+```
+
+```{r}
+#3d.	Prune the tree using the optimal size found in 3.b
+
+#prune the tree 
+prune.insurance = prune.tree(tree.insurance, best = 4)
+
+```
+
+```{r}
+#3e.	Plot the best tree model and give labels.
+
+#e.	Plot the best tree model.
+plot(prune.insurance)
+text(prune.insurance, pretty = 0)
+title(main = "Pruned Classification Tree Model")
+
+```
+
+
+```{r}
+#3f.	Calculate the test MSE for the best model.
+
+#working on test set
+yhat = predict(prune.insurance, newdata = insurance[-train_idx, ])
+insurance.test = insurance[-train_idx, "charges"]
+
+#compute the MSE
+MSE_tree <- mean((yhat-insurance.test$charges)^2)
+print(MSE_tree)
+
+
+```
+
+
+
+####################################
+# 4.  Build a random forest model. #
+####################################
+
+```{r}
+#4a.	Build a random forest model using function randomForest(),
+#where charges is the response and the predictors are age, sex, bmi, children, smoker, and region.
+
+library(randomForest)
+rf.insurance = randomForest(charges ~ age + sex + bmi + children + smoker + region, insurance, subset = train_idx, importance = TRUE)
+rf.insurance
+
+```
+
+```{r}
+#4b.	Compute the test error using the test data set.
+#working on test set
+yhat.rf = predict(rf.insurance, newdata = insurance[-train_idx,])
+insurance.test = insurance[-train_idx, "charges"]
+
+#compute the MSE
+MSE_rf <- mean((yhat.rf - insurance.test$charges)^2)
+print(MSE_rf)
+
+
+```
+
+
+```{r}
+#4c.	Extract variable importance measure using the importance() function.
+importance(rf.insurance)
+
+```
+
+
+
+
+```{r}
+#4d.	Plot the variable importance using the function, varImpPlot(). Which are the top 3 important predictors in this model?
+
+varImpPlot(rf.insurance)
+
+```
+
+
+
+
+############################################
+# 5.  Build a support vector machine model #
+############################################
+
+```{r}
+#load the library
+library(e1071)
+
+#convert to factor
+insurance$sex = factor(insurance$sex)
+insurance$smoker = factor(insurance$smoker)
+insurance$region = factor(insurance$region)
+
+```
+
+
+
+```{r}
+#5a.	The response is charges and the predictors are age, sex, bmi, children, smoker, and region. 
+#Please use the svm() function with radial kernel and gamma=5 and cost = 50.
+
+svm.fit = svm(charges ~ age + sex + bmi + children + smoker + region, data= insurance[train_idx, ], kernel = "radial", gamma =5, cost =50)
+
+#print out model results
+summary(svm.fit)
+
+```
+
+
+```{r}
+#5b.	Perform a grid search to find the best model with potential cost: 1, 10, 50, 100 
+#and potential gamma: 1,3 and 5 and potential kernel: "linear","radial" and "sigmoid". 
+#And use the training set created in step 1.e.
+
+tune.out1 <- tune(svm, charges ~ age + sex + bmi + children + smoker + region, data= insurance[train_idx, ],
+                  ranges=list(kernel=c('linear', 'radial', 'sigmoid'),
+                              cost = c(1, 10, 50, 100), gamma= c( 1, 3, 5)))
+
+```
+
+
+
+```{r}
+#5c.	Print out the model results. What are the best model parameters?
+#find the optimal parameters
+summary(tune.out1)
+
+```
+
+
+```{r}
+#5d.	Forecast charges using the test dataset and the best model found in c).
+pred = predict(tune.out1$best.model, newdata = insurance[-train_idx, ])
+
+#total of each prediction 
+summary(pred)
+
+```
+
+
+```{r}
+#5e.	Compute the MSE (Mean Squared Error) on the test data.
+
+#get the true observation of charges of the test dataset
+trueObservation= test$charges
+
+#compute the MSE
+MSE_svm <- mean((trueObservation - pred)^2)
+print(MSE_svm)
+
+
+```
+
+
+
+#############################################
+# 6.  Perform the k-means cluster analysis. #
+#############################################
+
+```{r}
+# Load libraries for the k-means cluster analysis
+library("cluster")
+library("factoextra")
+
+```
+
+
+```{r}
+#6a.	Remove the sex, smoker, and region, since they are not numerical values.
+#To delete the columns sex, smoker, and region
+drops <- c("sex","smoker", "region")
+insuranced <- insurance[ , !(names(insurance) %in% drops)]
+head(insuranced)
+
+```
+
+
+```{r}
+#6b.	Determine the optimal number of clusters. Justify your answer. It may take longer running time since it uses a large dataset.
+set.seed(101)
+fviz_nbclust(insuranced, kmeans, method = "gap_stat")
+
+```
+
+
+```{r}
+#6c.	Perform k-means clustering using the 3 clusters.
+km.resIns <- kmeans(insuranced, 3, nstart = 25)
+
+```
+
+
+```{r}
+#6d.	Visualize the clusters in different colors.
+fviz_cluster(km.resIns, data = insuranced)
+
+```
+
+
+
+######################################
+# 7.  Build a neural networks model. #
+######################################
+
+
+```{r}
+#load the library
+library(neuralnet)
+```
+
+
+
+```{r}
+#7a.	Remove the sex, smoker, and region, since they are not numerical values.
+#To delete the columns sex, smoker, and region
+drops <- c("sex","smoker", "region")
+insuranced <- insurance[ , !(names(insurance) %in% drops)]
+head(insuranced)
+```
+
+
+
+```{r}
+#7b.	Standardize the inputs using the scale() function.
+
+scaled.insurance = scale(insuranced[,])
+
+
+```
+
+
+
+```{r}
+#7c.	Convert the standardized inputs to a data frame using the as.data.frame() function.
+scaled.insurance = as.data.frame(scaled.insurance)
+
+
+```
+
+
+```{r}
+#7d.	Split the dataset into a training set containing 80% of the original data and the test set containing the remaining 20%.
+set.seed(101)
+indexins <- sample(1:nrow(scaled.insurance),(.80)*nrow(scaled.insurance))
+trainins <- scaled.insurance[indexins,]
+testins <- scaled.insurance[-indexins,]
+
+#view columns names
+colnames(scaled.insurance) 
+
+```
+
+
+```{r}
+#7e.	The response is charges and the predictors are age, bmi, and children. Please use 1 hidden layer with 1 neuron.
+
+
+nn.modelins <- neuralnet(charges ~ age + bmi + children, data=trainins, hidden=c(1))
+
+```
+
+
+```{r}
+#7f.	Plot the neural networks.
+
+#plot the neural network
+plot(nn.modelins)
+
+```
+
+
+```{r}
+#7g.	Forecast the charges in the test dataset.
+
+#** I had to add neuralnet::compute to prevent an error I was getting when I just used compute. 
+
+predict.nn = neuralnet::compute(nn.modelins, testins[, c("age", "bmi", "children")])
+
+```
+
+
+```{r}
+#7h.	Get the observed charges of the test dataset.
+#get the observation of charges from test data set
+observ.testins = testins$charges
+
+```
+
+
+```{r}
+#7i.	Compute test error (MSE).
+#compute the MSE
+MSE_nn <- mean((observ.testins - predict.nn$net.result)^2)
+
+print(MSE_nn)
+
+```
+
+
+
+################################
+# 8.  Putting it all together. #
+################################
+
+```{r}
+#8a.	For predicting insurance charges, your supervisor asks you to choose the best model among the multiple regression, regression tree, random forest, support vector machine, and neural network models. Compare the test MSEs of the models generated in steps 2.g, 3.f, 4.b, 5.e, and 7.d. Display the names for these types of these models, using these labels: Multiple Linear Regression, Regression Tree, Random Forest, Support Vector Machine, and Neural Network and their corresponding test MSEs in a data.frame. Label the column in your data frame with the labels as Model.Type, and label the column with the test MSEs as Test.MSE and round the data in this column to 4 decimal places. 
+#Present the formatted data to your supervisor and recommend which model is best and why.
+
+model_names <- c('Multiple Linear Regression', 'Regression Tree', 'Random Forest', 'Support Vector Machine', 'Neural Network')
+MSE <- c(MSE_linear, MSE_tree, MSE_rf, MSE_svm, MSE_nn) # these are the variables holding the test errors from different models
+results <- data.frame(model_names, MSE)
+colnames(results) <- c('Model.Type', 'Test.MSE')
+results$Test.MSE <- round(results$Test.MSE, 4)
+
+print(results)
+
+
+```
+
+
+```{r}
+#8b.	Another supervisor from the sales department has requested your help to create a predictive model that his sales representatives can use to explain to clients what the potential costs could be for different kinds of customers, and they need an easy and visual way of explaining it. What model would you recommend, and what are the benefits and disadvantages of your recommended model compared to other models?
+
+```
+
+
+```{r}
+#8c.	The supervisor from the sales department likes your regression tree model.
+#But she says that the salespeople say the numbers in it are way too low and suggests that maybe the numbers on the leaf nodes predicting charges are log transformations of the actual charges. 
+#You realize that in step 1.b of this project that you had indeed transformed charges using the log function. 
+#And now you realize that you need to reverse the transformation in your final output. 
+#The solution you have is to reverse the log transformation of the variables in the regression tree model you created and redisplay the result.
+
+```
+
+```{r}
+#8c       a.	Copy your pruned tree model to a new variable.
+
+#create a new variable for pruned tree model from 3d
+regression_tree <- prune.insurance
+
+```
+
+
+```{r}
+#8c       b.	In your new variable, find the data.frame named "frame" and reverse the log transformation on the data.frame column yval using the exp() function. (If the copy of your pruned tree model is named copy_of_my_pruned_tree, then the data frame is accessed as copy_of_my_pruned_tree$frame, and it works just like a normal data frame.).
+
+
+regression_tree$frame$yval <- exp(regression_tree$frame$yval)
+
+#y value is the target; charges is the response
+
+regression_tree$frame
+
+```
+```{r}
+#8c      c.	After you reverse the log transform on the yval column, then replot the tree with labels.
+
+#replot the tree using the new yval values 
+
+plot(regression_tree)
+text(regression_tree, pretty=0)
+title(main = "Pruned Classification Tree Model using new yval values")
+
+```
+
+
+
+                    
