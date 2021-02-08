@@ -38,7 +38,7 @@ I can build simple statistical models and data visualizations
 I can isolate and fix common errors in Python programs.
 I can write small-scale Python programs using the above skills.
 
-o	For Machine Learning Projects: 
+For Machine Learning Projects: 
 I can describe artificial intelligence (AI) and machine learning (ML) in layperson terms.
 I can create scripts for the following ML techniques:
 Neural networks (biological, artificial, deep, convolutional, autoencoder, generative adversarial).
